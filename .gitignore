@@ -1,0 +1,8 @@
+crawl_genres.py
+crawl_movies.py
+crawl_MVdetail_actor.py
+.env
+__pycache__
+venv
+utils/crawler.py
+test.py

@@ -1,0 +1,6 @@
+supabase
+fastapi
+fastapi[standard]
+python-dotenv
+pyjwt
+passlib[bcrypt]
