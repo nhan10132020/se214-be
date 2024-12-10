@@ -5,6 +5,13 @@ import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from fastapi.openapi.utils import get_openapi
+from passlib.context import CryptContext
+import jwt
+from datetime import datetime, timedelta
+from fastapi import HTTPException, Depends, status
+from pydantic import BaseModel
+from typing import Optional
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 load_dotenv()
 
@@ -14,41 +21,8 @@ supabase: Client = create_client(url, key)
 
 app = FastAPI()
 
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
-    openapi_schema = get_openapi(
-        title="FastAPI application",
-        version="1.0.0",
-        description="JWT Authentication and Authorization",
-        routes=app.routes,
-    )
-    openapi_schema["components"]["securitySchemes"] = {
-        "BearerAuth": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT"
-        }
-    }
-    openapi_schema["security"] = [{"BearerAuth": []}]
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
-
-app.openapi = custom_openapi
-
-# ----------------- Authenticate JWT user ----------------- #
-
-from passlib.context import CryptContext
-import jwt
-from datetime import datetime, timedelta
-from fastapi import HTTPException, Depends, status
-from pydantic import BaseModel
-from typing import Optional
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-SECRET_KEY = "your_secret_key"  # Replace with a secure random key
+SECRET_KEY = "your_secret_key"  
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1420
 
@@ -60,11 +34,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=120))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+bearer_scheme = HTTPBearer()
 
 class UserCreate(BaseModel):
     username: str
@@ -118,14 +94,14 @@ def get_user_role(user_id: int):
     response = supabase.from_("roles").select("name").eq("role_id", user_id).execute()
     return response.data[0]["name"] if response.data else None
 
-def get_current_user(token: str = Depends(oauth2_scheme)):    
+def get_current_user(token: HTTPAuthorizationCredentials = Depends(bearer_scheme)):    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
@@ -133,12 +109,13 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         if user is None:
             raise credentials_exception
         return user
-    except:
+    except jwt.PyJWTError as e:
         raise credentials_exception
 
 # ----------------- Authenticate JWT user ----------------- #
 
 # Get all movies 
+from fastapi import Request
 @app.get("/movies")
 def get_movies(page: int = 1):
     response = supabase.table("movies").select("*").range((page-1)*10, (page*10)-1).execute()
@@ -208,63 +185,63 @@ def get_all_movies_by_genre_id(genre_id: int, page: int = 1):
     return response.data
 
 
-# # Add to favorite
-# @app.post("users/movies/{movie_id}/favorite")
-# def add_to_favorite(movie_id: int, current_user: dict = Depends(get_current_user)):
-#     response = supabase.table("favourite_list").insert({
-#         "user_id": current_user["user_id"],
-#         "movie_id": movie_id
-#     }).execute()
-#     return response.data
+# Add to favorite
+@app.post("/users/movies/{movie_id}/favorite")
+def add_to_favorite(movie_id: int, current_user: dict = Depends(get_current_user)):
+    response = supabase.table("favourite_list").insert({
+        "user_id": current_user["user_id"],
+        "movie_id": movie_id
+    }).execute()
+    return response.data
 
-# # Delete from favorite
-# @app.delete("users/movies/{movie_id}/favorite")
-# def delete_from_favorite(movie_id: int, current_user: dict = Depends(get_current_user)):
-#     response = supabase.table("favourite_list").delete().eq("user_id", current_user["user_id"]).eq("movie_id", movie_id).execute()
-#     return response.data
+# Delete from favorite
+@app.delete("/users/movies/{movie_id}/favorite")
+def delete_from_favorite(movie_id: int, current_user: dict = Depends(get_current_user)):
+    response = supabase.table("favourite_list").delete().eq("user_id", current_user["user_id"]).eq("movie_id", movie_id).execute()
+    return response.data
 
-# # Get all favorite movies of the user
-# @app.get("users/movies/favorite")
-# def get_all_favorite_movies(current_user: dict = Depends(get_current_user)):
-#     response = supabase.table("favourite_list").select(
-#         "movies(*)"
-#     ).eq("user_id", current_user["user_id"]).execute()
+# Get all favorite movies of the user
+@app.get("/users/movies/favorite")
+def get_all_favorite_movies(current_user: dict = Depends(get_current_user)):
+    response = supabase.table("favourite_list").select(
+        "movies(*)"
+    ).eq("user_id", current_user["user_id"]).execute()
     
-#     return response.data
+    return response.data
 
-# # User Comment for movie
-# @app.post("users/movies/{movie_id}/comment")
-# def user_comment_for_movie(movie_id: int, comment: str, current_user: dict = Depends(get_current_user)):
-#     response = supabase.table("comments").insert({
-#         "user_id": current_user["user_id"],
-#         "movie_id": movie_id,
-#         "content": comment
-#     }).execute()
-#     return response.data
+# User Comment for movie
+@app.post("/users/movies/{movie_id}/comment")
+def user_comment_for_movie(movie_id: int, comment: str, current_user: dict = Depends(get_current_user)):
+    response = supabase.table("comments").insert({
+        "user_id": current_user["user_id"],
+        "movie_id": movie_id,
+        "content": comment
+    }).execute()
+    return response.data
 
-# # User Updated their comment for movie
-# @app.patch("users/movies/{movie_id}/comment")
-# def user_update_comment_for_movie(movie_id: int, comment: str, current_user: dict = Depends(get_current_user)):
-#     response = supabase.table("comments").update({
-#         "content": comment,
-#         'updated_at': datetime.now()
-#     }).eq("user_id", current_user["user_id"]).eq("movie_id", movie_id).execute()
-#     return response.data
+# User Updated their comment for movie
+@app.patch("/users/movies/{movie_id}/comment")
+def user_update_comment_for_movie(movie_id: int, comment: str, current_user: dict = Depends(get_current_user)):
+    response = supabase.table("comments").update({
+        "content": comment,
+        'updated_at': datetime.now()
+    }).eq("user_id", current_user["user_id"]).eq("movie_id", movie_id).execute()
+    return response.data
 
-# # Update User watch history
-# @app.post("users/movies/{movie_id}/history/watch")
-# def update_user_watch_history(movie_id: int, current_user: dict = Depends(get_current_user)):
-#     response = supabase.table("watch_histories").insert({
-#         "user_id": current_user["user_id"],
-#         "movie_id": movie_id
-#     }).execute()
-#     return response.data
+# Update User watch history
+@app.post("/users/movies/{movie_id}/history/watch")
+def update_user_watch_history(movie_id: int, current_user: dict = Depends(get_current_user)):
+    response = supabase.table("watch_histories").insert({
+        "user_id": current_user["user_id"],
+        "movie_id": movie_id
+    }).execute()
+    return response.data
 
-# # Get all user watch history
-# @app.get("users/movies/history/watch")
-# def get_user_watch_history(current_user: dict = Depends(get_current_user)):
-#     response = supabase.table("watch_histories").select(
-#         "movies(*)"
-#     ).eq("user_id", current_user["user_id"]).execute()
+# Get all user watch history
+@app.get("/users/movies/history/watch")
+def get_user_watch_history(current_user: dict = Depends(get_current_user)):
+    response = supabase.table("watch_histories").select(
+        "movies(*)"
+    ).eq("user_id", current_user["user_id"]).execute()
     
-#     return response.data
+    return response.data
