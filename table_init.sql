@@ -10,7 +10,7 @@ CREATE TABLE users (
     username VARCHAR(50) NOT NULL,
     hashed_password VARCHAR(100) NOT NULL,
     role_id INT REFERENCES roles(role_id),
-    age INT NOT NULL
+    email VARCHAR(100) NOT NULL,
 );
 
 -- Table: genres

@@ -12,6 +12,7 @@ from fastapi import HTTPException, Depends, status
 from pydantic import BaseModel
 from typing import Optional
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
@@ -20,6 +21,15 @@ key: str = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 app = FastAPI()
+
+# config cors
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = "your_secret_key"  
@@ -45,8 +55,8 @@ bearer_scheme = HTTPBearer()
 class UserCreate(BaseModel):
     username: str
     password: str
-    role_id: int
-    age: int
+    confirm_password: str
+    email: str
 
 class Token(BaseModel):
     access_token: str
@@ -61,8 +71,8 @@ def create_user(user: UserCreate, hashed_password: str):
         response = supabase.table("users").insert({
             "username": user.username,
             "hashed_password": hashed_password,
-            "role_id": user.role_id,
-            "age": user.age,
+            "email": user.email,
+            "role_id": 1,
         }).execute()
         return response.data
     except Exception as e:
@@ -77,18 +87,28 @@ async def register_user(user: UserCreate):
         raise HTTPException(status_code=400, detail="Username already registered")
     if len(user.password) < 8:
         raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+    if user.password != user.confirm_password:
+        raise HTTPException(status_code=400, detail="Password and confirm password do not match")
+    # check email is valid type
+    if not "@" in user.email:
+        raise HTTPException(status_code=400, detail="Invalid email")
     hashed_password = get_password_hash(user.password)
     create_user(user, hashed_password)
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
 @app.post("/users/login", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = get_user_by_username(form_data.username)
-    if not user or not verify_password(form_data.password, user["hashed_password"]):
+async def login_for_access_token(user_login: UserLogin):
+    user = get_user_by_username(user_login.username)
+    if not user or not verify_password(user_login.password, user["hashed_password"]):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     access_token = create_access_token(data={"sub": user["username"]})
     return {"access_token": access_token, "token_type": "bearer"}
+
 
 def get_user_role(user_id: int):
     response = supabase.from_("roles").select("name").eq("role_id", user_id).execute()
@@ -111,6 +131,11 @@ def get_current_user(token: HTTPAuthorizationCredentials = Depends(bearer_scheme
         return user
     except jwt.PyJWTError as e:
         raise credentials_exception
+
+
+@app.get("/users/me")
+async def read_users_me(current_user: dict = Depends(get_current_user)):
+    return current_user
 
 # ----------------- Authenticate JWT user ----------------- #
 
