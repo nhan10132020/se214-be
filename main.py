@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from typing import Optional
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
+import math
 
 load_dotenv()
 
@@ -149,7 +150,8 @@ def get_movies(page: int = 1):
 # Get movie detail by movie id
 @app.get("/movies/{movie_id}/detail")
 def get_movie_detail_by_movie_id(movie_id: int):
-    response = supabase.table("movie_details").select("*").eq("movie_detail_id", movie_id).execute()
+     # Query the movie and its associated details
+    response = supabase.table("movies").select("*,movie_details(*)").eq("movie_id", movie_id).execute()
     return response.data
 
 # Get all genres by movie id
@@ -179,10 +181,10 @@ def get_all_comments_by_movie_id(movie_id: int):
     
     return response.data
 
-# Get all actors
-@app.get("/actors")
-def get_all_actors(page: int = 1):
-    response = supabase.table("actors").select("*").range((page-1)*10, (page*10)-1).execute()
+# Get actors by actor id
+@app.get("/actors/{actor_id}")
+def get_actor_by_actor_id(actor_id: int):
+    response = supabase.table("actors").select("*").eq("actor_id", actor_id).execute()
     return response.data
 
 # Get all movies for that actor
@@ -192,6 +194,12 @@ def get_all_movies_by_actor_id(actor_id: int, page: int = 1):
       "character, movies(*)"  
     ).eq("actor_id", actor_id).range((page-1)*10, (page*10)-1).execute()
     
+    return response.data
+
+# Get all actors
+@app.get("/actors")
+def get_all_actors(page: int = 1):
+    response = supabase.table("actors").select("*").range((page-1)*10, (page*10)-1).execute()
     return response.data
 
 # Get all genres
@@ -204,10 +212,10 @@ def get_all_genres():
 @app.get("/genres/{genre_id}/movies")
 def get_all_movies_by_genre_id(genre_id: int, page: int = 1):
     response = supabase.table("movie_has_genred").select(
-        "movies(*)"
-    ).eq("genre_id", genre_id).range((page-1)*10, (page*10)-1).execute()
-    
-    return response.data
+        "movies(*)", count="exact"
+    ).eq("genre_id", genre_id).range((page-1)*20, (page*20)-1).execute()
+    response.count = math.ceil(response.count/20)
+    return response
 
 
 # Add to favorite
@@ -225,20 +233,36 @@ def delete_from_favorite(movie_id: int, current_user: dict = Depends(get_current
     response = supabase.table("favourite_list").delete().eq("user_id", current_user["user_id"]).eq("movie_id", movie_id).execute()
     return response.data
 
-# Get all favorite movies of the user
-@app.get("/users/movies/favorite")
-def get_all_favorite_movies(current_user: dict = Depends(get_current_user)):
+# Is movie in favorite list
+@app.get("/users/movies/{movie_id}/favorite")
+def is_movie_in_favorite_list(movie_id: int, current_user: dict = Depends(get_current_user)):
     response = supabase.table("favourite_list").select(
         "movies(*)"
-    ).eq("user_id", current_user["user_id"]).execute()
+    ).eq("user_id", current_user["user_id"]).eq("movie_id", movie_id).execute()
+    if len(response.data) == 0:
+        return {
+            "status": False
+        }
+    return {
+            "status": True
+        }
+
+# Get all favorite movies of the user
+@app.get("/users/movies/favorite")
+def get_all_favorite_movies(page: int = 1,current_user: dict = Depends(get_current_user)):
+    response = supabase.table("favourite_list").select(
+        "movies(*)", count="exact"
+    ).eq("user_id", current_user["user_id"]).range((page-1)*20, (page*20)-1).execute()
+    response.count = math.ceil(response.count/20)
     
-    return response.data
+    return response
 
 # User Comment for movie
 @app.post("/users/movies/{movie_id}/comment")
 def user_comment_for_movie(movie_id: int, comment: str, current_user: dict = Depends(get_current_user)):
     response = supabase.table("comments").insert({
         "user_id": current_user["user_id"],
+        
         "movie_id": movie_id,
         "content": comment
     }).execute()
