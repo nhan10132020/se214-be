@@ -1,0 +1,21 @@
+services:
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: fastapi-backend
+    ports:
+      - "8000:8000"
+    environment:
+      SUPABASE_URL: "https://abzshvbrzacyvxejbels.supabase.co"
+      SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFienNodmJyemFjeXZ4ZWpiZWxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE1NzE4NTksImV4cCI6MjA0NzE0Nzg1OX0.kHt-cPv87m9SZCs_T42aR3zSoTxbXZewsJ0umiA4M2o"
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: react-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "mongodb+srv://loyalP183:loyalP183@cluster0.lj0ll.mongodb.net/mydatabase?retryWrites=true&w=majority"

@@ -7,7 +7,8 @@ const nextConfig = {
                 hostname: 'image.tmdb.org',
                 pathname: '**'
             }
-        ]
+        ],
+        domains: ['image.tmdb.org'], // Allow images from these domains
     },
     experimental: {
         missingSuspenseWithCSRBailout: false,
