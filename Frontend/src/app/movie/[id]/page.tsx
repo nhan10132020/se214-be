@@ -121,6 +121,7 @@ export default function MoviePage() {
           layout="fill"
           objectFit="cover"
           className="opacity-50"
+          unoptimized
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black"></div>
       </div>
@@ -135,6 +136,7 @@ export default function MoviePage() {
             layout="fill"
             objectFit="cover"
             className="rounded-lg"
+            unoptimized
           />
         </div>
 
@@ -221,6 +223,7 @@ export default function MoviePage() {
                 width={100}
                 height={100}
                 className="rounded-full mx-auto mb-3"
+                unoptimized
               />
             )}
             <p className="font-medium">{actor.actors.name}</p>

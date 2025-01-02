@@ -104,6 +104,7 @@ export default function Home() {
                     width={300}
                     height={450}
                     className="object-cover w-full h-full"
+                    unoptimized
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                     <h2 className="text-base font-bold mb-1">{movie.movies.title}</h2>

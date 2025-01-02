@@ -33,6 +33,7 @@ function MovieCard({ movie }: { movie: MovieItem }) {
                 alt={movie.title || movie.name || "Media poster"}
                 layout="fill"
                 objectFit="cover"
+                unoptimized
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
               <div className="absolute inset-0 flex items-end justify-between p-4">

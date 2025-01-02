@@ -57,6 +57,7 @@ const ActorPage = () => {
             width={1920}
             height={1080}
             className="h-64 w-full object-cover opacity-50"
+            unoptimized
           />
         )}
         <div className="absolute inset-0 flex items-center px-10">
@@ -70,6 +71,7 @@ const ActorPage = () => {
                 width={150}
                 height={200}
                 className="rounded-lg shadow-md"
+                unoptimized
               />
             )}
             <div>
@@ -126,6 +128,7 @@ const ActorPage = () => {
                     width={500}
                     height={750}
                     className="w-full h-64 object-cover"
+                    unoptimized
                   />
                   <div className="p-4">
                     <h3 className="text-xl font-bold">{movies.title}</h3>
