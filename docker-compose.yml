@@ -2,7 +2,7 @@ services:
   backend:
     build:
       context: ./Backend
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     container_name: fastapi-backend
     ports:
       - "8000:8000"
@@ -13,7 +13,7 @@ services:
   frontend:
     build:
       context: ./Frontend
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
       args:
         NEXT_PUBLIC_BACKEND_URL: "http://localhost:8000"
     container_name: react-frontend
