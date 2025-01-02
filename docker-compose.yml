@@ -14,8 +14,8 @@ services:
     build:
       context: ./Frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BACKEND_URL: "http://localhost:8000"
     container_name: react-frontend
     ports:
       - "3000:3000"
-    environment:
-      DATABASE_URL: "mongodb+srv://loyalP183:loyalP183@cluster0.lj0ll.mongodb.net/mydatabase?retryWrites=true&w=majority"
