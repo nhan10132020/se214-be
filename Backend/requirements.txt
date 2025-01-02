@@ -4,3 +4,5 @@ fastapi[standard]
 python-dotenv
 pyjwt
 passlib[bcrypt]
+pandas
+scikit-learn
