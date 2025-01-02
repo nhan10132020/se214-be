@@ -20,7 +20,7 @@ export const getAllGenres = async () => {
     }
   };
 
-export const getAllMoviesByGerensID = async (id,page) => {
+export const getAllMoviesByGerensID = async (id: string,page: number) => {
     try {
       const response = await axiosInstance.get(`/genres/${id}/movies?page=${page}`);
       console.log(response.data);

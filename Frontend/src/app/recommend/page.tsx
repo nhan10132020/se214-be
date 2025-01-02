@@ -1,8 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { getAllMoviesByGerensID } from '@/api/genre';
 import Image from "next/image";
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { getUserRecommend } from '@/api/auth';
 
@@ -14,16 +12,24 @@ const Loading = () => (
   </div>
 );
 
+interface Movie {
+  movie_id: number;
+  title: string;
+  overview: string;
+  poster_path: string;
+  release_date: string;
+  vote_average: number;
+  popularity: number;
+}
+
 export default function Home() {
-  const [movies, setMovies] = useState([]);
+  const [movies, setMovies] = useState<Movie[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const pathName = usePathname();
-  const path = pathName.split('/');
 
   useEffect(() => {
-    const getMovies = async (page = 1) => {
+    const getMovies = async () => {
       try {
         setIsLoading(true);
         const response = await getUserRecommend();
@@ -36,10 +42,10 @@ export default function Home() {
       }
     };
 
-    getMovies(currentPage);
+    getMovies();
   }, [currentPage]);
 
-  const handlePageChange = (page) => {
+  const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
       window.scrollTo(0, 0);
@@ -123,7 +129,7 @@ export default function Home() {
                   key={index}
                   onClick={() => {
                     if (page !== '...') {
-                      handlePageChange(page);
+                      handlePageChange(page as number);
                     }
                   }}
                   className={`px-4 py-2 rounded-lg ${

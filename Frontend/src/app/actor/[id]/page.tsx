@@ -5,13 +5,31 @@ import { useParams } from 'next/navigation';
 import { getActorDetails } from '@/api/actor';
 import Link from 'next/link';
 
-const Skeleton = ({ className }) => (
+const Skeleton = ({ className }: { className: string }) => (
   <div className={`animate-pulse bg-gray-700 ${className}`} />
 );
 
+interface Actor {
+  actor_id: number;
+  name: string;
+  popularity: number;
+  profile_path: string;
+  known_for_department: string;
+}
+
+interface Movies {
+  movie_id: number;
+  title: string;
+  poster_path: string;
+  overview: string;
+  release_date: string;
+  vote_average: number;
+  vote_count: number;
+}
+
 const ActorPage = () => {
-  const [actor, setActor] = useState(null);
-  const [movies, setMovies] = useState([]);
+  const [actor, setActor] = useState<Actor>();
+  const [movies, setMovies] = useState<{ character: string; movies: Movies }[]>([]);
   const [loading, setLoading] = useState(true);
   const { id } = useParams();
 
@@ -34,8 +52,8 @@ const ActorPage = () => {
           <Skeleton className="h-64 w-full" />
         ) : (
           <Image
-            src={`https://image.tmdb.org/t/p/original${actor.profile_path}`}
-            alt={actor.name}
+            src={`https://image.tmdb.org/t/p/original${actor?.profile_path}`}
+            alt={actor?.name || 'Actor'}
             width={1920}
             height={1080}
             className="h-64 w-full object-cover opacity-50"
@@ -47,8 +65,8 @@ const ActorPage = () => {
               <Skeleton className="w-36 h-48 rounded-lg" />
             ) : (
               <Image
-                src={`https://image.tmdb.org/t/p/w300${actor.profile_path}`}
-                alt={actor.name}
+                src={`https://image.tmdb.org/t/p/w300${actor?.profile_path}`}
+                alt={actor?.name || 'Actor'}
                 width={150}
                 height={200}
                 className="rounded-lg shadow-md"
@@ -63,12 +81,12 @@ const ActorPage = () => {
                 </>
               ) : (
                 <>
-                  <h1 className="text-4xl font-bold">{actor.name}</h1>
+                  <h1 className="text-4xl font-bold">{actor?.name}</h1>
                   <p className="mt-2 text-sm uppercase text-gray-400">
-                    {actor.known_for_department}
+                    {actor?.known_for_department}
                   </p>
                   <p className="mt-2 text-gray-300">
-                    Popularity: {actor.popularity?.toFixed(1)}
+                    Popularity: {actor?.popularity?.toFixed(1)}
                   </p>
                 </>
               )}

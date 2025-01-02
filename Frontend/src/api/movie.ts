@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
   },
 });
 
-export const getMovieDetail = async (id) => {
+export const getMovieDetail = async (id: string | string[]) => {
     try {
       const movie_detail = await axiosInstance.get(`/movies/${id}/detail`);
       const actors = await axiosInstance.get(`/movies/${id}/actors`);
@@ -26,7 +26,7 @@ export const getMovieDetail = async (id) => {
     }
 };
 
-export const getMoveComment = async (id) => {
+export const getMoveComment = async (id: string | string[]) => {
   try {
     const comments = await axiosInstance.get(`/movies/${id}/comments`);
     return comments.data;

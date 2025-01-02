@@ -75,7 +75,7 @@ const Movie = () => {
                 currentBanner === movie[index - 1] ||
                 currentBanner === movie[index + 1];
               return (
-                <img
+                <Image
                   key={index}
                   src={`https://image.tmdb.org/t/p/w500${banner.poster_path || banner.backdrop_path}`}
                   alt={`backdrop_path ${index}`}

@@ -8,7 +8,7 @@ import axios from "axios";
 import { useRouter } from 'next/navigation'; 
 
 // func to register user using username and password role_id and age using axios
-const registerUser = async (username, email, password, confirmPassword) => {
+const registerUser = async (username:string , email: string, password:string, confirmPassword:string) => {
   try {
     const response = await axios.post("http://localhost:8000/users/register", {
       username,

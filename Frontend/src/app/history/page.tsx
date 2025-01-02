@@ -12,8 +12,22 @@ const Loading = () => (
   </div>
 );
 
+interface Movies {
+  movie_id: number;
+  title: string;
+  overview: string;
+  poster_path: string;
+  release_date: string;
+  vote_average: number;
+  popularity: number;
+}
+
+interface Movie {
+  movies: Movies;
+}
+
 export default function Home() {
-  const [movies, setMovies] = useState([]);
+  const [movies, setMovies] = useState<Movie[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +49,7 @@ export default function Home() {
     getMovies(currentPage);
   }, [currentPage]);
 
-  const handlePageChange = (page) => {
+  const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
       window.scrollTo(0, 0);
@@ -119,7 +133,7 @@ export default function Home() {
                   key={index}
                   onClick={() => {
                     if (page !== '...') {
-                      handlePageChange(page);
+                      handlePageChange(page as number);
                     }
                   }}
                   className={`px-4 py-2 rounded-lg ${

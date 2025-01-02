@@ -3,8 +3,13 @@ import { useEffect, useState } from 'react';
 import {getAllGenres} from '@/api/genre';
 import Link from 'next/link';
 
+interface Genres {
+  genre_id: number;
+  name: string;
+}
+
 export default function GenresPage() {
-  const [genres, setGenres] = useState([]);
+  const [genres, setGenres] = useState<Genres[]>([]);
 
   // Call API to get all genres
   useEffect(() => {

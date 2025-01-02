@@ -64,7 +64,7 @@ export const getCurrentUser = async () => {
   };
 
 
-export const commentForMovie = async (movie_id,comment) => {
+export const commentForMovie = async (movie_id:string | string[],comment:string) => {
   try {
     const response = await axiosInstance.post(`users/movies/${movie_id}/comment?comment=${comment}`);
     console.log(response.data);
@@ -75,7 +75,7 @@ export const commentForMovie = async (movie_id,comment) => {
   }
 };
 
-export const addToFavourite = async (movie_id) => {
+export const addToFavourite = async (movie_id:number) => {
   try {
     const response = await axiosInstance.post(`users/movies/${movie_id}/favorite`);
     console.log(response.data);
@@ -86,7 +86,7 @@ export const addToFavourite = async (movie_id) => {
   }
 };
 
-export const deleteFromFavourite = async (movie_id) => {
+export const deleteFromFavourite = async (movie_id:number) => {
   try {
     const response = await axiosInstance.delete(`users/movies/${movie_id}/favorite`);
     console.log(response.data);
@@ -97,7 +97,7 @@ export const deleteFromFavourite = async (movie_id) => {
   }
 };
 
-export const isFavouriteMoive = async (movie_id) => {
+export const isFavouriteMoive = async (movie_id: number) => {
   try {
     const response = await axiosInstance.get(`users/movies/${movie_id}/favorite`);
     console.log(response.data);
@@ -109,7 +109,7 @@ export const isFavouriteMoive = async (movie_id) => {
 };
 
 
-export const getAllFavouriteMovie = async (page) => {
+export const getAllFavouriteMovie = async (page: number) => {
   try {
     const response = await axiosInstance.get(`users/movies/favorite?page=${page}`);
     return response.data;
@@ -119,7 +119,7 @@ export const getAllFavouriteMovie = async (page) => {
   }
 };
 
-export const updateUserWatchHistory = async (movie_id) => {
+export const updateUserWatchHistory = async (movie_id: number) => {
   try {
     const response = await axiosInstance.post(`users/movies/${movie_id}/history/watch`);
     console.log(response.data);
@@ -130,7 +130,7 @@ export const updateUserWatchHistory = async (movie_id) => {
   }
 }
 
-export const getUserWatchHistory = async (page) => {
+export const getUserWatchHistory = async (page: number) => {
   try {
     const response = await axiosInstance.get(`users/movies/history/watch?page=${page}`);
     return response.data;

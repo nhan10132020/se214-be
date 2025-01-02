@@ -7,7 +7,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation'; 
 
 // func to login user using username and password using axios
-const loginUser = async (username, password) => {
+const loginUser = async (username: string, password: string) => {
   try {
     const response = await axios.post('http://localhost:8000/users/login', {
       username,

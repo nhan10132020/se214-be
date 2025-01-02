@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
   },
 });
 
-export const getActorDetails = async (actor_id) => {
+export const getActorDetails = async (actor_id:string | string[]) => {
     try {
       const actor = await axiosInstance.get(`/actors/${actor_id}`);
       const actor_movies = await axiosInstance.get(`/actors/${actor_id}/movies`);

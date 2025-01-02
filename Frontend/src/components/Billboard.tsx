@@ -63,7 +63,7 @@ const Billboard = () => {
                                 currentBanner === databanner[index - 1] || 
                                 currentBanner === databanner[index + 1];
                             return (
-                                <img 
+                                <Image 
                                     key={index}
                                     src={banner.thumbnail} 
                                     alt={`Thumbnail ${index}`} 

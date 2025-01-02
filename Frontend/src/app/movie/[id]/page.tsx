@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import Loading from "@/components/Loading";
-import { FaPlay, FaHeart, FaGlobe } from "react-icons/fa6";
+import { FaHeart, FaGlobe } from "react-icons/fa6";
 import { getMovieDetail } from "@/api/movie";
 import Link from 'next/link';
 import { addToFavourite, deleteFromFavourite, isFavouriteMoive, updateUserWatchHistory } from "@/api/auth";

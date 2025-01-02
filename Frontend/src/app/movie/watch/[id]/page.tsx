@@ -6,6 +6,15 @@ import { commentForMovie } from "@/api/auth";
 import { useState, useEffect } from "react";
 import { getMoveComment } from "@/api/movie";
 
+interface Comment {
+  content: string;
+  created_at: string;
+  updated_at: string;
+  users: {
+    username: string;
+  };
+}
+
 export default function WatchMovie() {
   const { id: movieID } = useParams();
   const searchParams = useSearchParams();
@@ -13,7 +22,7 @@ export default function WatchMovie() {
   const title = searchParams.get("name");
   const router = useRouter();
 
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
 
   useEffect(() => {
@@ -29,7 +38,16 @@ export default function WatchMovie() {
     fetchComments();
   }, []);
 
-  const handleCommentSubmit = async (e) => {
+  interface NewComment {
+    content: string;
+    created_at: string;
+    updated_at: string;
+    users: {
+      username: string;
+    };
+  }
+
+  const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
@@ -38,17 +56,16 @@ export default function WatchMovie() {
       await commentForMovie(movieID, newComment);
 
       // Add the new comment to the state
-      setComments([
-        ...comments,
-        {
-          content: newComment,
-          created_at: new Date().toISOString(), 
-          updated_at: new Date().toISOString(),
-          users: {
-            username: "You",
-          }
+      const newCommentData: NewComment = {
+        content: newComment,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        users: {
+          username: "You",
         },
-      ]);
+      };
+
+      setComments([...comments, newCommentData]);
 
       // Clear the input field
       setNewComment("");
