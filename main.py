@@ -13,6 +13,8 @@ from pydantic import BaseModel
 from typing import Optional
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
+import json
+from recommend import get_recommendations
 import math
 
 load_dotenv()
@@ -173,10 +175,10 @@ def get_all_actors_by_movie_id(movie_id: int):
     return response.data
 
 # Get all comments for movie id
-@app.get("movies/{movie_id}/comments")
+@app.get("/movies/{movie_id}/comments")
 def get_all_comments_by_movie_id(movie_id: int):
     response = supabase.table("comments").select(
-        "users(*), content"
+        "users(username), content, created_at, updated_at"
     ).eq("movie_id", movie_id).execute()
     
     return response.data
@@ -280,7 +282,7 @@ def user_update_comment_for_movie(movie_id: int, comment: str, current_user: dic
 # Update User watch history
 @app.post("/users/movies/{movie_id}/history/watch")
 def update_user_watch_history(movie_id: int, current_user: dict = Depends(get_current_user)):
-    response = supabase.table("watch_histories").insert({
+    response = supabase.table("watch_histories").upsert({
         "user_id": current_user["user_id"],
         "movie_id": movie_id
     }).execute()
@@ -288,9 +290,25 @@ def update_user_watch_history(movie_id: int, current_user: dict = Depends(get_cu
 
 # Get all user watch history
 @app.get("/users/movies/history/watch")
-def get_user_watch_history(current_user: dict = Depends(get_current_user)):
+def get_user_watch_history(page: int =1, current_user: dict = Depends(get_current_user)):
     response = supabase.table("watch_histories").select(
-        "movies(*)"
-    ).eq("user_id", current_user["user_id"]).execute()
+        "movies(*)", count="exact"
+    ).eq("user_id", current_user["user_id"]).range((page-1)*20, (page*20)-1).order("created_at", desc=True).execute()
+    response.count = math.ceil(response.count/20)
     
-    return response.data
+    return response
+
+@app.get("/users/AI/recommend")
+def read_root(current_user: dict = Depends(get_current_user)):
+    getfavourite = supabase.table("favourite_list").select("movie_id").eq("user_id", current_user["user_id"]).execute()
+    favourite_ids = getfavourite.data
+    favourite_ids = [fav["movie_id"] for fav in favourite_ids]
+    if len(favourite_ids) < 3:
+        return {
+            "recommend_ids":[]
+        }
+    response = get_recommendations(favourite_ids).to_json(orient='records')
+    return {
+        "recommend_ids":json.loads(response)
+    }
+    
