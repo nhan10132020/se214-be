@@ -1,6 +1,8 @@
 import axios from "axios";
 import Cookies from "js-cookie"; // Assume you're using a library like js-cookie
 
+const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 // Utility function to validate JWT token
 const isTokenValid = (token: string | undefined): boolean => {
   if (!token) return false;
@@ -14,7 +16,7 @@ const isTokenValid = (token: string | undefined): boolean => {
 
 // Create Axios instance
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8000", // Replace with your API base URL
+  baseURL: backendURL, // Replace with your API base URL
   timeout: 10000, // Set a timeout (e.g., 10 seconds)
   headers: {
     "Content-Type": "application/json",
@@ -55,7 +57,6 @@ axiosInstance.interceptors.response.use(
 export const getCurrentUser = async () => {
     try {
       const response = await axiosInstance.get("/users/me");
-      console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -66,8 +67,7 @@ export const getCurrentUser = async () => {
 
 export const commentForMovie = async (movie_id:string | string[],comment:string) => {
   try {
-    const response = await axiosInstance.post(`users/movies/${movie_id}/comment?comment=${comment}`);
-    console.log(response.data);
+    const response = await axiosInstance.post(`users/movies/${movie_id}/comment?comment=${comment}`)
     return response.data;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -77,8 +77,7 @@ export const commentForMovie = async (movie_id:string | string[],comment:string)
 
 export const addToFavourite = async (movie_id:number) => {
   try {
-    const response = await axiosInstance.post(`users/movies/${movie_id}/favorite`);
-    console.log(response.data);
+    const response = await axiosInstance.post(`users/movies/${movie_id}/favorite`)
     return response.data;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -88,8 +87,7 @@ export const addToFavourite = async (movie_id:number) => {
 
 export const deleteFromFavourite = async (movie_id:number) => {
   try {
-    const response = await axiosInstance.delete(`users/movies/${movie_id}/favorite`);
-    console.log(response.data);
+    const response = await axiosInstance.delete(`users/movies/${movie_id}/favorite`)
     return response.data;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -99,8 +97,7 @@ export const deleteFromFavourite = async (movie_id:number) => {
 
 export const isFavouriteMoive = async (movie_id: number) => {
   try {
-    const response = await axiosInstance.get(`users/movies/${movie_id}/favorite`);
-    console.log(response.data);
+    const response = await axiosInstance.get(`users/movies/${movie_id}/favorite`)
     return response.data.status;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -121,8 +118,7 @@ export const getAllFavouriteMovie = async (page: number) => {
 
 export const updateUserWatchHistory = async (movie_id: number) => {
   try {
-    const response = await axiosInstance.post(`users/movies/${movie_id}/history/watch`);
-    console.log(response.data);
+    const response = await axiosInstance.post(`users/movies/${movie_id}/history/watch`)
     return response.data;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -143,7 +139,6 @@ export const getUserWatchHistory = async (page: number) => {
 export const getUserRecommend = async () => {
   try {
     const response = await axiosInstance.get(`users/AI/recommend`);
-    console.log(response.data.recommend_ids);
     return response.data.recommend_ids;
   } catch (error) {
     console.error("Error fetching data:", error);

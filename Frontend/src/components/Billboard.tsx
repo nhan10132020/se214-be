@@ -15,7 +15,6 @@ interface Props {
 
 const Billboard = () => {
     const [currentBanner, setCurrentBanner] = useState(databanner[0]);
-    console.log(currentBanner);
     const [isMuted, setIsMuted] = React.useState(true); 
 
     const toggleMute = () => { 

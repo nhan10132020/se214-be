@@ -6,10 +6,12 @@ import { BiHomeAlt, BiCameraMovie } from 'react-icons/bi';
 import axios from 'axios';
 import { useRouter } from 'next/navigation'; 
 
+const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 // func to login user using username and password using axios
 const loginUser = async (username: string, password: string) => {
   try {
-    const response = await axios.post('http://localhost:8000/users/login', {
+    const response = await axios.post(`${backendURL}/users/login`, {
       username,
       password,
     });
